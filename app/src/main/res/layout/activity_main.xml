@@ -9,51 +9,61 @@
     tools:context=".Main">
 
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-    <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:id="@+id/scrollView">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center">
         <TextView
             android:text=""
             android:id="@+id/x"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
         <TextView
             android:text=""
             android:id="@+id/y"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
         <TextView
             android:text=""
             android:id="@+id/z"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
         <TextView
             android:text=""
             android:id="@+id/result"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
         <TextView
             android:text=""
             android:id="@+id/result2"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="stop"
-            android:id="@+id/stop"/>
+            android:id="@+id/stop"
+            android:layout_gravity="center"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="start"
-            android:id="@+id/start"/>
+            android:id="@+id/start"
+            android:layout_gravity="center"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/dir"/>
+            android:id="@+id/dir"
+            android:layout_gravity="center"/>
     </LinearLayout>
     </ScrollView>
 </RelativeLayout>

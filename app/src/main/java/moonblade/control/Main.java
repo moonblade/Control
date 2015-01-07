@@ -55,7 +55,6 @@ public class Main extends Activity implements SensorEventListener{
         start.setOnClickListener (new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                //mSensorManager.registerListener(this,acc, SensorManager.SENSOR_DELAY_NORMAL);
                 if(mLight!=null)
                 {
 
@@ -64,7 +63,6 @@ public class Main extends Activity implements SensorEventListener{
                     if(acc==null)
                         Toast.makeText(getApplicationContext(), "null",Toast.LENGTH_LONG).show();
                     startsensor();
-//                    Toast.makeText(getApplicationContext(),"Doesnt work, start game again",Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -125,9 +123,11 @@ public class Main extends Activity implements SensorEventListener{
         vy=event.values[1];
         vz=event.values[2];
 
+/*
         x.setText("Moved in X : "+vx);
         y.setText("Moved in Y : "+vy);
         z.setText("Moved in Z : "+vz);
+*/
 
         if(vx>vxh)
             result.setText("forward");
@@ -140,6 +140,7 @@ public class Main extends Activity implements SensorEventListener{
             result2.setText("left");
         else
             result2.setText("no direction");
+
 /*        if(vx>vxh)
         {
             if(vy>vyh)
