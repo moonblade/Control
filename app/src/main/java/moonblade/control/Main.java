@@ -40,29 +40,8 @@ public class Main extends Activity implements SensorEventListener{
         brake=(ImageButton)findViewById(R.id.brake);
         gas=(ImageButton)findViewById(R.id.gas);
         dir=(ImageView)findViewById(R.id.dir);
-/*
-
-
-        x=(TextView)findViewById(R.id.x);
-        y=(TextView)findViewById(R.id.y);
-        z=(TextView)findViewById(R.id.z);
-        result=(TextView)findViewById(R.id.result);
-        result2=(TextView)findViewById(R.id.result2);
-        stop=(Button)findViewById(R.id.stop);
-        start=(Button)findViewById(R.id.start);
-*/
-
         startsensor();
-/*        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-*//*                result.setText("stopped");
-                result2.setText("stopped");
-                *//*
-                dir.setImageResource(R.drawable.stopped);
-                onPause();
-            }
-        });*/
+
         brake.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -140,7 +119,7 @@ public class Main extends Activity implements SensorEventListener{
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener(this,acc, SensorManager.SENSOR_DELAY_NORMAL);
+        startsensor();
         flag=false;
     }
 
@@ -179,11 +158,13 @@ public class Main extends Activity implements SensorEventListener{
         }
         else
         {
-/*            if (vy > vyh)
+/*
+            if (vy > vyh)
                 dir.setImageResource(R.drawable.right);
             else if (vy < vyl)
                 dir.setImageResource(R.drawable.left);
-            else*/
+            else
+*/
                 dir.setImageResource(R.drawable.stopped);
         }
 
