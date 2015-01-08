@@ -1,7 +1,9 @@
 package moonblade.control;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,6 +24,7 @@ import java.util.List;
 
 public class Main extends Activity implements SensorEventListener{
     public TextView result,result2;
+    BluetoothAdapter mBluetoothAdapter;
     ImageButton brake,gas;
     int vxh=5,vxl=-1,vyh=3,vyl=-3;
     private float vx,vy,vz;
@@ -41,6 +44,10 @@ public class Main extends Activity implements SensorEventListener{
         gas=(ImageButton)findViewById(R.id.gas);
         dir=(ImageView)findViewById(R.id.dir);
         startsensor();
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+
 
         brake.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -85,6 +92,7 @@ public class Main extends Activity implements SensorEventListener{
 
 
     }
+
 
     private void startsensor() {
         flag=false;
@@ -167,6 +175,47 @@ public class Main extends Activity implements SensorEventListener{
 */
                 dir.setImageResource(R.drawable.stopped);
         }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+
+        return true;
+
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        final int id=item.getItemId();
+
+        if(id==R.id.action_connect);
+        {
+            connectBluetooth();
+        }
+        return true;
+    }
+
+    private void connectBluetooth()
+    {
+        if(mBluetoothAdapter==null)
+        {
+            Toast.makeText(getApplicationContext(),"No Bluetooth! App will exit.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(!mBluetoothAdapter.isEnabled())
+        {
+            Intent intent=new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            int REQUEST_ENABLE_BT=1;
+
+            startActivityForResult(intent, REQUEST_ENABLE_BT);
+            if(REQUEST_ENABLE_BT==RESULT_CANCELED)
+            {
+                Toast.makeText(getApplicationContext(),"Cancelled",Toast.LENGTH_SHORT).show();
+            }
+        }
+
 
     }
 }

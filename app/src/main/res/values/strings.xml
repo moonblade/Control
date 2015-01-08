@@ -4,5 +4,6 @@
     <string name="app_name">Control</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="connect">Connect Device</string>
 
 </resources>
