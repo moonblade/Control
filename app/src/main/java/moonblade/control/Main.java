@@ -1,7 +1,9 @@
 package moonblade.control;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -13,13 +15,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 public class Main extends Activity implements SensorEventListener{
@@ -34,6 +40,7 @@ public class Main extends Activity implements SensorEventListener{
     ImageView dir;
     List<Sensor> mLight;
     Sensor acc;
+
     private boolean flag=false;
     @Override
     public final void onCreate(Bundle savedInstanceState) {
@@ -173,7 +180,7 @@ public class Main extends Activity implements SensorEventListener{
                 dir.setImageResource(R.drawable.left);
             else
 */
-                dir.setImageResource(R.drawable.stopped);
+            dir.setImageResource(R.drawable.stopped);
         }
 
     }
@@ -216,6 +223,22 @@ public class Main extends Activity implements SensorEventListener{
             }
         }
 
+//        side note for future
+//        Optionally, your application can also listen for the ACTION_STATE_CHANGED broadcast Intent, which the system will broadcast whenever the Bluetooth state has changed. This broadcast contains the extra fields EXTRA_STATE and EXTRA_PREVIOUS_STATE, containing the new and old Bluetooth states, respectively. Possible values for these extra fields are STATE_TURNING_ON, STATE_ON, STATE_TURNING_OFF, and STATE_OFF. Listening for this broadcast can be useful to detect changes made to the Bluetooth state while your app is running.
 
     }
+
+    private void makedialog(ArrayAdapter mArrayAdapter)
+    {
+        Dialog dialog=new Dialog(getApplication());
+        dialog.setTitle("Paired Devices");
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setContentView(R.layout.listview);
+        ListView devices;
+        devices=(ListView)findViewById(R.id.lvname);
+//        devices.setAdapter(mArrayAdapter);
+        dialog.show();
+    }
+
+
 }
