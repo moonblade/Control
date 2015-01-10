@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,7 +14,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,16 +28,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 
 public class Main extends Activity implements SensorEventListener {
     BluetoothAdapter mBluetoothAdapter;
     ImageButton brake, gas;
-    ArrayList<String> devices;
-    int vyh = 3, vyl = -3;
+    ArrayList<String> devices,scanDevices;
+    ArrayAdapter<String> scanAdapter;
+    int vyh = 3, vyl = -3,vyhh=5,vyll=-5;
+    int directionPower;
     private float vx, vy, vz;
     boolean forward, reverse;
     SensorManager mSensorManager;
@@ -43,12 +52,24 @@ public class Main extends Activity implements SensorEventListener {
     Sensor acc;
     private boolean flag = false;
 
-    @Override
-    public final void onCreate(Bundle savedInstanceState) {
+    private static final String TAG = "bluetooth1";
 
+    private BluetoothAdapter btAdapter = null;
+    private BluetoothSocket btSocket = null;
+    private OutputStream outStream = null;
+
+
+    // SPP UUID service
+    private static final UUID MY_UUID = UUID
+            .fromString("00001101-0000-1000-8000-00805f9b34fb");
+
+    // MAC-address of Bluetooth module
+    private static String address = "00:13:01:11:22:50";
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_land);
-
+        tryToConnect();
         initialise();
         startsensor();
 
@@ -94,6 +115,7 @@ public class Main extends Activity implements SensorEventListener {
                 return false;
             }
         });
+
     }
 
     private void initialise() {
@@ -146,22 +168,128 @@ public class Main extends Activity implements SensorEventListener {
         vx = event.values[0];
         vy = event.values[1];
         vz = event.values[2];
-
         //setting the image based on direction and keypress
         if (reverse) {
             if (vy > vyh)
-                dir.setImageResource(R.drawable.downright);
+            {
+                if(vy>vyhh)
+                {
+
+                    if(directionPower!=92)
+                    {
+                        dir.setImageResource(R.drawable.downright);
+                        directionPower=92;
+                        send();
+                    }
+
+                }
+                else
+                {
+
+                    if(directionPower!=91)
+                    {
+                        dir.setImageResource(R.drawable.downright);
+                        directionPower=91;
+                        send();
+                    }
+
+                }
+            }
+
             else if (vy < vyl)
-                dir.setImageResource(R.drawable.downleft);
+            {
+                if(vy<vyll)
+                {
+                    if(directionPower!=72)
+                    {
+                        dir.setImageResource(R.drawable.downleft);
+                        directionPower=72;
+                        send();
+                    }
+                }
+                else
+                {
+                    if(directionPower!=71)
+                    {
+                        dir.setImageResource(R.drawable.downleft);
+                        directionPower=71;
+                        send();
+                    }
+                }
+
+
+            }
             else
-                dir.setImageResource(R.drawable.down);
+            {
+                if(directionPower!=81)
+                {
+                    dir.setImageResource(R.drawable.down);
+                    directionPower=81;
+                    send();
+                }
+
+            }
+
         } else if (forward) {
+
             if (vy > vyh)
-                dir.setImageResource(R.drawable.upright);
+            {
+                if(vy>vyhh)
+                {
+                    if(directionPower!=32)
+                    {
+                        dir.setImageResource(R.drawable.upright);
+                        directionPower=32;
+                        send();
+                    }
+
+                }
+                else
+                {
+                    if(directionPower!=31)
+                    {
+                        dir.setImageResource(R.drawable.upright);
+                        directionPower=31;
+                        send();
+                    }
+                }
+
+            }
             else if (vy < vyl)
-                dir.setImageResource(R.drawable.upleft);
+            {
+                if(vy<vyll)
+                {
+                    if(directionPower!=12)
+                    {
+                        dir.setImageResource(R.drawable.upleft);
+                        directionPower=12;
+                        send();
+                    }
+
+                }
+                else
+                {
+                    if(directionPower!=11)
+                    {
+                        dir.setImageResource(R.drawable.upleft);
+                        directionPower=11;
+                        send();
+                    }
+
+                }
+
+            }
             else
-                dir.setImageResource(R.drawable.up);
+            {
+                if(directionPower!=21)
+                {
+                    dir.setImageResource(R.drawable.up);
+                    directionPower=21;
+                    send();
+                }
+            }
+
+
         } else {
             //left and right are disabled for now.
 /*
@@ -171,9 +299,112 @@ public class Main extends Activity implements SensorEventListener {
                 dir.setImageResource(R.drawable.left);
             else
 */
-            dir.setImageResource(R.drawable.stopped);
+            if(directionPower!=0)
+            {
+                dir.setImageResource(R.drawable.stopped);
+                directionPower=0;
+                send();
+            }
+
         }
 
+    }
+
+    public void tryToConnect() {
+
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        checkBTState();
+        BluetoothDevice device = btAdapter.getRemoteDevice(address);
+        try {
+            btSocket = createBluetoothSocket(device);
+        } catch (IOException e1) {
+            errorExit("Fatal Error", "In onResume() and socket create failed: "
+                    + e1.getMessage() + ".");
+        }
+
+        btAdapter.cancelDiscovery();
+        Log.d(TAG, "...Connecting...");
+        try {
+            btSocket.connect();
+            Log.d(TAG, "...Connection ok...");
+        } catch (IOException e) {
+            try {
+                btSocket.close();
+            } catch (IOException e2) {
+                errorExit("Fatal Error",
+                        "In onResume() and unable to close socket during connection failure"
+                                + e2.getMessage() + ".");
+            }
+        }
+
+        toast("connected");
+        // Create a data stream so we can talk to server.
+        Log.d(TAG, "...Create Socket...");
+
+        try {
+            outStream = btSocket.getOutputStream();
+        } catch (IOException e) {
+            errorExit(
+                    "Fatal Error",
+                    "In onResume() and output stream creation failed:"
+                            + e.getMessage() + ".");
+        }
+    }
+
+    private void sendData(String message) {
+        byte[] msgBuffer = message.getBytes();
+        Log.d(TAG, "...Send data: " + message + "...");
+        try {
+            outStream.write(msgBuffer);
+        } catch (IOException e) {
+
+            toast("cannot");
+        }
+    }
+
+    private void checkBTState() {
+        // Check for Bluetooth support and then check to make sure it is turned
+        // on
+        // Emulator doesn't support Bluetooth and will return null
+        if (btAdapter == null) {
+            errorExit("Fatal Error", "Bluetooth not support");
+        } else {
+            if (btAdapter.isEnabled()) {
+                Log.d(TAG, "...Bluetooth ON...");
+            } else {
+                // Prompt user to turn on Bluetooth
+                Intent enableBtIntent = new Intent(
+                        BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, 1);
+            }
+        }
+    }
+
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device)
+            throws IOException {
+        if (Build.VERSION.SDK_INT >= 10) {
+            try {
+                final Method m = device.getClass().getMethod(
+                        "createInsecureRfcommSocketToServiceRecord",
+                        new Class[] { UUID.class });
+                return (BluetoothSocket) m.invoke(device, MY_UUID);
+            } catch (Exception e) {
+                Log.e(TAG, "Could not create Insecure RFComm Connection", e);
+            }
+        }
+        return device.createRfcommSocketToServiceRecord(MY_UUID);
+    }
+
+    private void errorExit(String title, String message) {
+        toast(title + " - " + message);
+        finish();
+    }
+
+
+
+    void send()
+    {
+        sendData(String.valueOf(directionPower));
     }
 
     @Override
@@ -216,12 +447,6 @@ public class Main extends Activity implements SensorEventListener {
             }
         }
 
-        if (mBluetoothAdapter.isEnabled()) {
-            // Register the BroadcastReceiver
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mReceiver, filter);
-
-        }
     }
 
     private boolean hasbluetooth() {
@@ -266,8 +491,14 @@ public class Main extends Activity implements SensorEventListener {
 
     private void scan_devices() {
         mBluetoothAdapter.startDiscovery();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, devices);
-        makeScanDialog(adapter);
+        if (mBluetoothAdapter.isEnabled()) {
+            // Register the BroadcastReceiver
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(mReceiver, filter);
+
+        }
+
+        makeScanDialog(scanAdapter);
     }
 
     private void makeScanDialog(ArrayAdapter<String> adapter) {
@@ -280,6 +511,16 @@ public class Main extends Activity implements SensorEventListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
+            }
+        });
+        dialog.setPositiveButton("Refresh", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+//                if(mBluetoothAdapter.isDiscovering()){
+//                    mBluetoothAdapter.cancelDiscovery();
+//                }
+//                scan_devices();
+                makeScanDialog(scanAdapter);
             }
         });
         devices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -300,15 +541,23 @@ public class Main extends Activity implements SensorEventListener {
 //                Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 //                Add the name and address to an array adapter to show in a ListView
-                devices.add(device.getName() + "\n" + device.getAddress());
+                try {
+                    scanDevices.add(device.getName() + "\n" + device.getAddress());
+
+                }catch (Exception e)
+                {
+                    toast(e.toString());
+                }
+                scanAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, android.R.id.text1, scanDevices);
             }
         }
     };
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        mBluetoothAdapter.cancelDiscovery();
+        //super.onDestroy();
+        if(mBluetoothAdapter.isDiscovering())
+            mBluetoothAdapter.cancelDiscovery();
         unregisterReceiver(mReceiver);
     }
 
