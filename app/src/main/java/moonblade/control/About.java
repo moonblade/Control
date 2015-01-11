@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.logging.Handler;
+
 import moonblade.control.R;
 
 public class About extends Activity {
