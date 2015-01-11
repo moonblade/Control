@@ -16,6 +16,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.renderscript.Script;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,8 +41,7 @@ import java.util.UUID;
 public class Main extends Activity implements SensorEventListener {
     BluetoothAdapter mBluetoothAdapter;
     ImageButton brake, gas;
-    ArrayList<String> devices,scanDevices;
-    ArrayAdapter<String> scanAdapter;
+    ArrayList<String> devices,macid;
     int vyh = 3, vyl = -3,vyhh=5,vyll=-5;
     int directionPower;
     private float vx, vy, vz;
@@ -63,13 +63,13 @@ public class Main extends Activity implements SensorEventListener {
     private static final UUID MY_UUID = UUID
             .fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-    // MAC-address of Bluetooth module
-    private static String address = "00:13:01:11:22:50";
+    // MAC-address of Bluetooth module, its going to be assigned from paired devices
+    private static String address = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_land);
-        tryToConnect();
+//        tryToConnect();
         initialise();
         startsensor();
 
@@ -77,6 +77,11 @@ public class Main extends Activity implements SensorEventListener {
         brake.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if(address.isEmpty()){
+                    toast("Connect First");
+                    return false;
+                }
+
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         brake.setImageResource(R.drawable.brakepressed);
@@ -98,6 +103,11 @@ public class Main extends Activity implements SensorEventListener {
         gas.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if(address.isEmpty())
+                {
+                    toast("Connect First");
+                    return false;
+                }
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         gas.setImageResource(R.drawable.gaspressed);
@@ -310,7 +320,7 @@ public class Main extends Activity implements SensorEventListener {
 
     }
 
-    public void tryToConnect() {
+    public boolean tryToConnect() {
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
@@ -334,10 +344,12 @@ public class Main extends Activity implements SensorEventListener {
                 errorExit("Fatal Error",
                         "In onResume() and unable to close socket during connection failure"
                                 + e2.getMessage() + ".");
+                return false;
             }
         }
 
         toast("connected");
+
         // Create a data stream so we can talk to server.
         Log.d(TAG, "...Create Socket...");
 
@@ -348,7 +360,9 @@ public class Main extends Activity implements SensorEventListener {
                     "Fatal Error",
                     "In onResume() and output stream creation failed:"
                             + e.getMessage() + ".");
+            return false;
         }
+        return true;
     }
 
     private void sendData(String message) {
@@ -459,12 +473,13 @@ public class Main extends Activity implements SensorEventListener {
     }
 
     private void makedialog(ArrayAdapter<String> adapter) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle("Paired Devices");
         ListView devices = new ListView(this);
         devices.setAdapter(adapter);
         dialog.setView(devices);
 
+/*
         dialog.setPositiveButton("Scan", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -473,6 +488,7 @@ public class Main extends Activity implements SensorEventListener {
                 scan_devices();
             }
         });
+*/
         dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -483,12 +499,21 @@ public class Main extends Activity implements SensorEventListener {
         devices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                toast((String) parent.getItemAtPosition(position));
+//                toast((String) parent.getItemAtPosition(position));
+//            toast(macid.get(position));
+                address=macid.get(position);
+                if(!tryToConnect())
+                {
+                 toast("Some Error Occured");
+                }
+
+
             }
         });
         dialog.show();
     }
 
+/*
     private void scan_devices() {
         mBluetoothAdapter.startDiscovery();
         if (mBluetoothAdapter.isEnabled()) {
@@ -532,6 +557,7 @@ public class Main extends Activity implements SensorEventListener {
         dialog.show();
     }
 
+
     //    Create a BroadcastReceiver for ACTION_FOUND
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -552,24 +578,27 @@ public class Main extends Activity implements SensorEventListener {
             }
         }
     };
+*/
 
     @Override
     protected void onDestroy() {
-        //super.onDestroy();
+        super.onDestroy();
         if(mBluetoothAdapter.isDiscovering())
             mBluetoothAdapter.cancelDiscovery();
-        unregisterReceiver(mReceiver);
+        //unregisterReceiver(mReceiver);
     }
 
 
     public ArrayList<String> getPairedDevices() {
         ArrayList<String> devices=new ArrayList<String>();
+        macid=new ArrayList<String>();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
 //            Loop through paired devices
             for (BluetoothDevice device : pairedDevices) {
 //                Add the name and MAC address to an array adapter to show in a ListView
                 devices.add(device.getName() + "\n" + device.getAddress());
+                macid.add(device.getAddress());
             }
         }
         return devices;
