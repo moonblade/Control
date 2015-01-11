@@ -418,7 +418,10 @@ public class Main extends Activity implements SensorEventListener {
 
     void send()
     {
-        sendData(String.valueOf(directionPower));
+        if(directionPower==0)
+            sendData("00");
+        else
+            sendData(String.valueOf(directionPower));
     }
 
     @Override
@@ -510,7 +513,7 @@ public class Main extends Activity implements SensorEventListener {
                 address=macid.get(position);
                 if(!tryToConnect())
                 {
-                 toast("Some Error Occured");
+                    toast("Some Error Occured");
                 }
 
 
