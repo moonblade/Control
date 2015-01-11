@@ -29,6 +29,7 @@
         <activity
             android:name=".MainSplashScreen"
             android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
             android:label="@string/title_activity_main_splash_screen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

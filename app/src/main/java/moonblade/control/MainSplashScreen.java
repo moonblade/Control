@@ -17,14 +17,9 @@ public class MainSplashScreen extends Activity {
             public void run() {
 
                 try {
-                    // Thread will sleep for 5 seconds
                     sleep(delay*1000);
-
-                    // After 5 seconds redirect to another intent
-                    Intent i=new Intent(getBaseContext(),Main.class);
+                   Intent i=new Intent(getBaseContext(),Main.class);
                     startActivity(i);
-
-                    //Remove activity
                     finish();
 
                 } catch (Exception e) {
@@ -32,8 +27,6 @@ public class MainSplashScreen extends Activity {
                 }
             }
         };
-
-        // start thread
         background.start();
 
     }
