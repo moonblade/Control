@@ -431,9 +431,15 @@ public class Main extends Activity implements SensorEventListener {
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
         final int id = item.getItemId();
 
-        if (id == R.id.action_connect) ;
+        if (id == R.id.action_connect)
         {
             connectBluetooth();
+        }
+
+        if(id==R.id.action_about)
+        {
+            Intent i=new Intent(Main.this,About.class);
+            startActivity(i);
         }
         return true;
     }
